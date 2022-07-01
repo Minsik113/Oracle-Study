@@ -1,0 +1,268 @@
+/*정리문제1. 총 급여가 $5,000이 넘는 각 JOB에 대해 JOB과 월급 총액을
+출력하세요. (단, PRESIDENT를 제외시키고, 월급 총액별으로 정렬)
+JOB PAYROLL
+------------------ ----------
+SALESMAN 5600
+ANALYST 6000
+MANAGER 8275*/
+SELECT job
+    ,SUM(sal) as "payrool"
+FROM emp
+WHERE LOWER(job) <> 'president'
+GROUP BY job
+HAVING SUM(sal)>5000
+ORDER BY SUM(sal)
+;
+
+/* 2,3번 employees, departments, locations */
+/*정리문제2. Shipping부서에 근무하는 사원에 대해 last_name, job_id,
+부서번호, 부서이름을 last_name 순으로 출력하세요. (결과-45건)
+
+LAST_NAME JOB_ID DEPARTMENT_ID DEPARTMENT_N
+---------- ---------- ------------- ------------
+Atkinson ST_CLERK 50 Shipping
+Bell SH_CLERK 50 Shipping
+Bissot ST_CLERK 50 Shipping
+Bull SH_CLERK 50 Shipping
+Cabrio SH_CLERK 50 Shipping*/
+SELECT e.last_name
+    ,e.job_id
+    ,e.department_id
+    ,d.department_name
+FROM departments d
+    join employees e
+    on d.department_id = e.department_id
+WHERE LOWER(d.department_name) = 'shipping'
+ORDER BY e.last_name
+;
+
+/*정리문제3. south san francisco에서 근무하는 모든 사원에 대해
+last_name, job, 부서번호, 부서이름, 부서위치(city)를
+출력하세요. (결과-45건)
+
+LAST_NAME JOB_ID DEPARTMENT_ID DEPARTMENT_N CITY
+---------- ---------- ------------- ------------ -------------------
+Weiss ST_MAN 50 Shipping South San Francisco
+Fripp ST_MAN 50 Shipping South San Francisco
+Kaufling ST_MAN 50 Shipping South San Francisco
+Vollman ST_MAN 50 Shipping South San Francisco
+Mourgos ST_MAN 50 Shipping South San Francisco
+Nayer ST_CLERK 50 Shipping South San Francisco
+Mikkilinen ST_CLERK 50 Shipping South San Francisco*/
+SELECT e.last_name
+    ,e.job_id
+    ,e.department_id
+    ,d.department_name
+    ,l.city
+FROM locations l
+    ,departments d
+    ,employees e
+WHERE d.location_id = l.location_id
+    AND e.department_id = d.department_id
+    AND LOWER(l.city)='south san francisco'
+;
+
+/*정리문제4. 사원의 이름과 사원 번호 그리고 관리자 이름과
+관리자 번호를 출력하세요.(열 레이블 Employee,
+Emp#, Manager 그리고 Mgr#)
+Employee Emp# Manager Mgr#
+---------- ---------- ---------- ----------
+FORD 7902 JONES 7566
+SCOTT 7788 JONES 7566*/
+SELECT e1.ename as "Employee"
+    ,e1.empno as "Emp#"
+    ,e2.ename as "Manager"
+    ,e2.empno as "Mgr#"
+FROM emp e1
+    ,emp e2
+WHERE e1.mgr = e2.empno
+;
+
+
+
+
+/* hr연습코드 */
+select * from student;
+select * from professor;
+select * from departments;
+select * from employees;
+select * from locations;
+desc employees;
+desc locations;
+desc departments;
+
+
+/*14.*/
+--select *
+select d1.dname || '의 소속은 ' || d2.dname
+from department d1
+    ,department d2
+where d2.college=d1.deptno
+;
+/*13. 지도교수가 없는 학생과 학생이 배정되지 않은 교수*/
+select p.name
+    ,p.position
+    ,s.name
+    ,s.grade
+from student s 
+    full outer join professor p
+    on s.profno = p.profno
+;
+
+select p.name
+    ,p.position
+    ,s.name
+    ,s.grade
+from student s, professor p
+where s.profno = p.profno(+)
+union
+select p.name
+    ,p.position
+    ,s.name
+    ,s.grade
+from student s, professor p
+where s.profno(+) = p.profno
+order by 1 --첫버째 column기준으로 정렬
+;
+/*12. 지도교수의 이름, 직급, 학생의 이름 학년*/
+select p.name
+    ,p.position
+    ,s.name
+    ,s.grade
+from student s 
+    join professor p
+    on s.profno = p.profno
+order by p.profno
+;
+/*11.nonequi join 예시*/
+select *
+from professor p, salgrade s
+where p.sal between s.losal and s.hisal
+;
+/*10.inner join on 예시*/
+select *
+from student s 
+    inner join department d
+    on s.deptno = d.deptno
+;
+/*9.join using 예시*/
+select *
+from student s join department d
+    using (deptno)
+;
+
+select *
+from student s, department d
+where s.deptno = d.deptno
+    and s.grade='1'
+;
+
+/*8. equi join 예시 */
+select * 
+from student s
+    natural join department d
+;
+select *
+from student s, department d
+where s.deptno = d.deptno
+    and s.grade='1'
+;
+select *
+from student s 
+    natural join department d
+where s.deptno = d.deptno
+    and s.grade='1'
+;
+
+/*7. cross join 예시 카티션곱*/
+select * 
+from student s
+    cross join department d
+;
+
+/*6.몸무게 70이상인 학생 이름, 학번, 지도교수번호, 교수이름, 학과번호, 위치 출력*/
+select s.name
+    ,s.studno
+    ,p.profno
+    ,p.name
+    ,d.dname
+    ,d.loc
+from student s
+    ,professor p
+    ,department d
+where s.weight>=70
+    and s.profno = p.profno
+    and p.deptno = d.deptno
+;
+
+--5.join실습
+select p.name
+    , p.sal
+    , p.deptno
+    , d.dname
+from professor p
+    , department d
+;
+
+--4.join실습
+select *
+from student s, department d
+where s.deptno = d.deptno
+;
+
+--3.학과별 학생수가 최대 또는 최소인 학과의 학생수 출력
+select max(count(studno)) max_cnt, min(count(studno)) min_cnt
+from student
+group by deptno
+;
+
+--2.학과별 평균몸무게중 제일 큰 몸무게를 구하라
+select MAX(avg(weight)) max_weight
+from student
+group by deptno
+;
+
+--1.학년마다 학생수,평균키,평균몸무게 출력하라. 단, 4명이상있는 학년
+select grade
+    ,count(*)
+    ,avg(height)
+    ,avg(weight)
+from student
+group by grade
+having count(*)>4
+;
+
+
+
+/*scott 연습코드*/
+select * from emp;
+select * from dept;
+
+/*3. 사원테이블. dallas에 근무하는 사원의 사번, 이름, 부서번호, 근무지 출력*/
+SELECT e.empno
+    ,e.ename
+    ,e.deptno
+    ,d.loc
+FROM emp e
+    , dept d
+WHERE LOWER(d.loc)='dallas'
+    AND e.deptno = d.deptno
+;
+
+/*2.급여1000이상인 사원들에 한하여, 부서번호, 평균급여를 출력하라. 
+단, 평균급여가 1900이상인 부서만 출력*/
+SELECT deptno
+    ,ROUND(AVG(sal))
+FROM EMP
+WHERE sal >= 1000
+group by deptno
+HAVING AVG(SAL)>=1900
+;
+
+--1. 평균급여가 1900이상인 부서 출력
+SELECT deptno
+    ,TRUNC(AVG(sal),1)
+FROM emp
+GROUP BY deptno
+HAVING AVG(sal)>=1900
+;
