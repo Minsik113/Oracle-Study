@@ -1,0 +1,398 @@
+SELECT * FROM EMP;
+
+SELECT hiredate
+    ,TO_CHAR(hiredate,'day')
+FROM emp
+ORDER BY DECODE(TO_CHAR(hiredate,'day'),'월요일','1'
+                ,'화요일','2'
+                ,'수요일','3'
+                ,'목요일','4'
+                ,'금요일','5'
+                ,'토요일','6'
+                ,'일요일','7'
+                )
+;
+/*문제1. 사원 테이블(EMP)에서
+최대 급여와 최소 급여 사이의 차이를 출력하는 질의를 작성하세요.
+열레이블은 DIFFERENCE입니다.*/
+SELECT MAX(sal) - MIN(sal) "DIFFERENCE"
+FROM emp
+;
+
+/*문제2. 사원명, 입사일 그리고 입사한 요일을 출력하세요. 열 레이블은 DAY 입니다.
+(***결과는 월요일부터 시작하는 요일 순으로 정렬하세요.)
+
+ENAME HIREDATE DAY
+-------------------- -------- ------------------------
+SMITH 80/12/17 수요일
+ALLEN 81/02/20 금요일
+WARD 81/02/22 일요일*/
+SELECT ENAME
+    ,HIREDATE
+    ,DAY
+FROM (
+    SELECT ename
+        ,hiredate
+        ,TO_CHAR(hiredate,'day') as "DAY" 
+        ,CASE WHEN TO_CHAR(hiredate,'day')='월요일' THEN 1
+             WHEN TO_CHAR(hiredate,'day')='화요일' THEN 2
+             WHEN TO_CHAR(hiredate,'day')='수요일' THEN 3
+             WHEN TO_CHAR(hiredate,'day')='목요일' THEN 4
+             WHEN TO_CHAR(hiredate,'day')='금요일' THEN 5
+             WHEN TO_CHAR(hiredate,'day')='토요일' THEN 6
+             ELSE 7
+        END as "DAY2" 
+    FROM emp
+    )
+order by DAY2
+;
+
+SELECT ename,TO_CHAR(hiredate, 'day') DAY
+FROM emp
+ORDER BY TO_CHAR(hiredate-1, 'd'); -- 1:일 2:월 ... 7:토
+
+
+SELECT hiredate
+    ,TO_CHAR(hiredate,'day')
+FROM emp
+ORDER BY DECODE(TO_CHAR(hiredate,'day'),'월요일','1'
+                ,'화요일','2'
+                ,'수요일','3'
+                ,'목요일','4'
+                ,'금요일','5'
+                ,'토요일','6'
+                ,'일요일','7'
+                )
+;
+
+/*문제3. 1980, 1981, 1982, 1987년에 입사한 사원에 대해 
+전체 사원 수와 연도별 사원 수를 출력하세요.
+TOTAL 1980 1981 1982 1987
+---------- ---------- ---------- ---------- ----------
+14 1 10 1 2*/
+SELECT count(*) AS "TOTAL"
+    ,TO_CHAR(hiredate,'yyyy') 
+FROM emp
+WHERE TO_CHAR(hiredate,'yyyy') IN ('1980','1981','1982','1987')
+group by CUBE(TO_CHAR(hiredate,'yyyy'))
+;
+
+SELECT COUNT(*) "TOTAL"
+    ,COUNT(DECODE(TO_CHAR(hiredate,'yyyy'),'1980',1)) "1980"
+    ,COUNT(DECODE(TO_CHAR(hiredate,'yyyy'),'1981',1)) "1981"
+    ,COUNT(DECODE(TO_CHAR(hiredate,'yyyy'),'1982',1)) "1982"
+    ,COUNT(DECODE(TO_CHAR(hiredate,'yyyy'),'1987',1)) "1987"
+FROM emp
+;
+
+/*3.모든 사원의 최대 급여, 최저 급여, 합계 그리고 평균 급여를 출력하세요. 
+평균은 소수점 둘째자리에서 반올림*/
+SELECT MAX(sal) as "Maximum"
+    ,MIN(sal) as "Minimum"
+    ,SUM(sal) as "Sum"
+    ,ROUND(AVG(sal),2) as "Average"
+FROM emp
+;
+/*2.사원 테이블에서 중복되는 직업을 제외하고 카운트 해보세요*/
+SELECT JOB
+    ,COUNT(DISTINCT JOB)
+FROM EMP
+GROUP BY JOB
+;
+/*1.사원 테이블에서 직업의 수를 카운트 하세요*/
+SELECT JOB
+    ,COUNT(JOB)
+FROM EMP
+GROUP BY JOB
+;
+
+
+SELECT ENAME
+    ,COMM
+    ,NVL(TO_CHAR(COMM),'No Commission') COMM
+FROM EMP
+;
+
+SELECT ENAME
+    ,SAL
+    ,COMM
+    ,SAL+NVL(COMM,0)
+FROM EMP
+WHERE DEPTNO = 20
+;
+
+SELECT empno
+    , ename
+    , job
+    , sal
+    ,sal*1.73
+    , TRUNC(sal*1.73,2) AS "New Salary"
+FROM EMP
+;
+
+
+/*연습 */
+
+SELECT * FROM PROFESSOR;
+SELECT * FROM STUDENT;
+
+SELECT deptno
+    ,grade
+    ,to_char(birthdate,'yyyy') birthdate
+    ,count(*)
+FROM student
+group by GROUPING SETS((deptno, grade), (deptno, TO_CHAR(birthdate,'yyyy')))
+;
+
+SELECT deptno
+    ,grade
+    ,null
+    ,count(*)
+FROM STUDENT
+group by deptno, grade
+union all
+select deptno, null, to_char(birthdate,'yyyy'),count(*)
+from student
+group by deptno,to_char(birthdate,'yyyy')
+;
+
+SELECT deptno
+    ,grade
+    ,count(*)
+FROM student
+GROUP BY deptno, grade
+;
+
+SELECT deptno
+    ,position
+    ,count(*)
+FROM professor
+GROUP BY cube(deptno, position)
+;
+
+SELECT deptno
+    ,position
+    ,count(*)
+FROM professor
+GROUP BY rollup(deptno, position)
+;
+
+
+
+SELECT deptno
+    , grade G
+    , COUNT(*)
+    , ROUND(AVG(weight))
+FROM student
+group by deptno, grade
+;
+
+SELECT deptno
+    ,COUNT(*)
+    ,COUNT(comm)
+FROM professor
+GROUP BY deptno
+;
+
+SELECT stddev(height), variance(HEIGHT)
+FROM student
+;
+
+/*case문을 사용하여 학생테이블의 주민번호를 참조하자. 이름, 학번, 태어난 달, 분기를 출력하라.
+1/4, 2/4, 3/4, 4/4, 단 황보_정호 제외*/
+select case when '21'<'33' then '44'
+        else '22'
+        end
+from dual;
+CREATE INDEX emp_ix01 ON student(birthdate);
+SELECT name
+    ,studno
+    ,substr(birthdate,4,2) as birth_month
+    ,CASE WHEN TO_NUMBER(substr(birthdate,4,2)) <= 3 THEN '1/4'
+        WHEN TO_NUMBER(substr(birthdate,4,2)) <= 6 THEN '2/4'
+        WHEN TO_NUMBER(substr(birthdate,4,2)) <= 9 THEN '3/4'
+        WHEN TO_NUMBER(substr(birthdate,4,2)) <= 12 THEN '4/4'
+    END as birth_month_quarter 
+FROM student
+WHERE name <> '황보_정호'
+;
+
+--학과번호가101이면 보너스10%, 102이면 20%, 103이면 30%가 되게 출력하라
+SELECT name
+    , deptno
+    , sal
+    , CASE WHEN deptno=101 THEN sal*0.1
+            WHEN deptno=102 THEN sal*0.2
+            WHEN deptno=103 THEN sal*0.3
+            ELSE 0
+      END bobus
+FROM professor
+;
+
+-- 학과번호가 101이면 Computer Science로, 그 외는 ETC로 출력하라
+SELECT deptno
+    , name
+    , DECODE(deptno, 101, 'Computer Science', 'ETC')
+FROM student
+WHERE name <> '황보_정호'
+;
+
+--DECODE()
+SELECT NAME
+    , DEPTNO
+    , DECODE(DEPTNO, 101, '컴퓨터공학과'
+            , 102, '멀티미디어학과'
+            , 103, '전자공학과', '기계공학과'
+            ) DNAME
+FROM PROFESSOR
+;
+
+SELECT NAME
+    ,COMM
+    ,SAL
+    ,COALESCE(COMM, SAL, 0 ) CO_RESULT
+FROM PROFESSOR
+;
+
+SELECT NAME
+    ,USERID
+    ,LENGTH(NAME)*2 A
+    ,LENGTHB(USERID) B
+    ,NVL(TO_CHAR(NULLIF(LENGTH(NAME)*2, LENGTHB(USERID))),' ') C
+FROM PROFESSOR
+;
+
+select * from nls_database_parameters where parameter = 'NLS_CHARACTERSET';
+
+--alter session set nls_language = korean;
+--alter session set nls_language = american;
+SELECT NAME
+    , POSITION
+    , SAL
+    ,COMM
+    ,SAL+NVL(COMM,0)
+FROM PROFESSOR
+;
+
+
+--
+SELECT IDNUM
+    , SUBSTR(IDNUM,1,6) 
+    , TO_DATE(SUBSTR(IDNUM,1,6),'YYMMDD')
+    , TO_CHAR(TO_DATE(SUBSTR(IDNUM,1,6),'YYMMDD'), 'YY/MM/DD')
+FROM STUDENT;
+-- 출생한지 며칠째인지 출력
+select sysdate
+    ,to_char(trunc(sysdate,'dd'))
+from dual
+;
+-- 출생한지 며칠째인지, 현재일까지의 개월 수 출력
+SELECT sysdate
+    , TO_DATE(TO_CHAR(sysdate,'yyyymmdd')) - TO_DATE('19950413') as lived_day
+    , TRUNC(MONTHS_BETWEEN(TO_CHAR(sysdate,'yyyymmdd'), '19950413')) as lived_month
+FROM dual
+;
+
+SELECT 9940/30 FROM DUAL;
+SELECT 331/12 FROM DUAL;
+
+SELECT trunc(sysdate - to_date('1995/12/31')) "Lived day"
+FROM dual;
+
+
+
+
+SELECT * 
+FROM PROFESSOR
+WHERE HIREDATE=TO_DATE('june 01, 01', 'Month DD, YY')
+;
+
+SELECT SAL
+    , (SAL*COMM)*12
+    , TO_CHAR((SAL*COMM)*12,'9,999') 
+FROM PROFESSOR
+WHERE COMM IS NOT NULL
+;
+
+
+SELECT NAME,GRADE
+    ,TO_CHAR(BIRTHDATE,'DAY MONTH DD,YYYY')
+FROM STUDENT;
+
+SELECT BIRTHDATE
+    ,TO_CHAR(BIRTHDATE,'MON "THE" DDTH "OF" YYYY')
+FROM STUDENT
+;
+
+SELECT TO_CHAR(SYSDATE, 'YY/MM/DD HH24:MI:SS PM') NORMAL
+    ,TO_CHAR(SYSDATE, 'YY/MM/DD') NORMAL
+    ,TO_CHAR(ROUND(SYSDATE,'yy'), 'YY/MM/DD') yy
+    ,TO_CHAR(ROUND(SYSDATE,'mm'), 'YY/MM/DD') mm
+    ,TO_CHAR(ROUND(SYSDATE,'dd'), 'YY/MM/DD') dd
+--    ,TO_CHAR(ROUND('2014/11/15','yy'), 'YY/MM/DD') yyd
+    
+FROM DUAL
+;
+
+SELECT SYSDATE
+    ,LAST_DAY('20111212') a
+    ,NEXT_DAY('20111212','일')  b
+    ,NEXT_DAY('20111212',1) c
+    ,NEXT_DAY('20111212','월') d
+    ,trunc(sysdate) e
+    ,trunc(sysdate,'dd') e
+    ,trunc(sysdate,'mm') e
+    ,trunc(sysdate,'yy') e
+FROM DUAL
+;
+
+SELECT TO_CHAR(SYSDATE, 'YY/MM/DD HH24:MI:SS') NORMAL
+    ,TO_CHAR(TRUNC(SYSDATE), 'YY/MM/DD HH24:MI:SS') N
+    ,TO_CHAR(ROUND('20110217')) N
+FROM DUAL;
+
+SELECT SYSDATE
+    , NEXT_DAY(SYSDATE)
+    , LAST_DAY(SYSDATE)
+FROM DUAL
+;
+
+select ADD_MONTHS('20141212',4)
+FROM DUAL;
+
+select hiredate
+    ,sysdate
+    ,TRUNC(MONTHS_BETWEEN(sysdate, hiredate), 0) "개월차"
+    ,ADD_MONTHS(hiredate,6) "6개월후"
+from professor
+WHERE MONTHS_BETWEEN(SYSDATE, HIREDATE) < 360
+;
+
+select sysdate-1
+    ,sysdate
+    ,sysdate+1
+from dual
+;
+
+--
+select hiredate
+    ,hiredate+30
+    ,hiredate+60
+from professor
+;
+
+--
+SELECT NAME
+    ,SAL
+    ,SAL/22
+    ,TRUNC(SAL/22)
+    ,ROUND(SAL/22)
+    ,ROUND(SAL/22,2)
+FROM PROFESSOR
+;
+--
+SELECT NAME
+    , SAL/COMM
+    , MOD(SAL,COMM)
+FROM PROFESSOR
+;
