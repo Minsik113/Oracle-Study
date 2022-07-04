@@ -1,0 +1,546 @@
+/*실습1. 교수 테이블에서 교수 번호, 교수 이름으로 구성된
+테이블 PROF1, PROF2를 생성해 보세요.*/
+select * from prof2;
+CREATE TABLE prof1
+AS (SELECT profno 
+            ,name
+    FROM professor
+    WHERE 1=2)
+;
+CREATE TABLE prof2
+AS (SELECT profno
+            , name
+    FROM professor
+    WHERE 1=2)
+;
+
+/*실습2.교수 테이블에서 교수 번호가 9901~9905까지인 교수의
+교수번호와 이름은 prof1 테이블에 입력
+교수 번호가 9906~9920까지인 교수의 교수번호와 이름은
+prof2 테이블에 입력 입력해 보세요.*/
+INSERT ALL
+    WHEN profno BETWEEN 9901 and 9905 THEN
+        INTO prof1 VALUES(profno
+                            ,name)
+    WHEN profno BETWEEN 9906 and 9920 THEN
+        INTO prof2 VALUES(profno
+                            ,name)
+SELECT profno
+        , name 
+FROM professor
+;   
+  
+/*실습3.각 학과별로 입사일이 가장 오래된
+교수의 교수번호와 이름, 입사일, 학과명을 출력하세요.
+(입사일 순으로 정렬하세요.)
+
+교수 NO. 교수명 입사일 학과
+===== ===== ===== ===========
+9901 김도훈 82/06/24 컴퓨터공학과
+9905 권혁일 86/01/08 멀티미디어학과
+9908 남은혁 90/11/18 기계공학과
+9902 이재우 95/04/12 전자공학과*/
+select p.profno
+        ,p.name
+        ,p.hiredate
+        ,d.DNAME
+from professor p, department d
+where (p.deptno, p.hiredate) IN (select deptno
+                                        , max(hiredate)
+                                  from professor
+                                  group by deptno)
+        AND p.deptno = d.deptno
+ORDER BY p.hiredate
+;
+
+/*실습4.학생 테이블에서 학번이 20000에서 25000번에 해당하는
+학생들을 삭제하세요.*/
+DELETE FROM student
+WHERE studno BETWEEN 20000 AND 25000
+;
+
+/*실습5. EMPNO, ENAME 그리고 DEPTNO 열만을 포함하는 EMP 테이블의
+구조를 기초로EMPLOYEE2 테이블을 생성하세요.
+새 테이블에서 ID, LAST_NAME과 DEPT_ID로 열 이름을 지정하세요.*/
+CREATE TABLE employee2(ID,LAST_NAME,DEPT_ID)
+AS select empno, ename, deptno FROM emp
+;
+
+/*실습6. 5번에서 생성한 EMPLOYEE2 테이블에서 LAST_NAME 필드를 10-->30으로 변경하세요.*/
+ALTER TABLE employee2
+MODIFY (LAST_NAME varchar2(30))
+;
+
+
+------------------------------hr 코드------------------------------
+--drop table prof2;
+
+
+--create table addr_fourth
+--as select id, name from address
+--where 1=2;
+--select * from addr_fourth;
+--rename addr_fourth to client_address;
+--create table addr_second(id,name,addr,phone,e_mail) as select * from address;
+--desc addr_second;
+--insert into address values (1,'hgdong','seoul','123-4567','hgdong@cwn.ac.kr');
+--insert into address(id,name,phone,email) values (1,'adwada','132-1231','aawd@cwn.ac.kr');
+--DROP TABLE addr_second;
+--select * from address;
+--desc address;
+--drop table address;
+--TRUNCATE TABLE address;
+--rollback;
+--create table address(
+--    id          number(3)
+--    ,name       varchar2(50)
+--    ,addr       varchar2(100) default 'korea'
+--    ,phone      varchar2(30)
+--    ,email      varchar2(100)
+--);
+--drop table address;
+--select * from address;
+
+/*현재 스키마에 만들어진 모든 테이블이 보임*/
+select * from tab;
+
+/*문제24. sequence예시*/
+/*1~100의 데이터를 가지는 s_seq 시퀀스 생성*/
+CREATE SEQUENCE s_seq
+INCREMENT BY 1
+START WITH 1
+MAXVALUE 100;
+/*sequence 최댓값 변경*/
+alter sequence s_seq maxvalue 200;
+
+SELECT min_value, max_value, increment_by, last_number
+from user_sequences
+where sequence_name = 'S_SEQ'
+;
+CREATE TABLE user_sequence(
+    s_seq       
+    ,num         number(4)
+    ,userid     varchar2(10)
+);
+
+insert into user_sequence values(3,'qwe3');
+insert into user_sequence values(4,'qwe4');
+insert into user_sequence values(5,'qwe5');
+insert into user_sequence values(5,'qwe5');
+insert into user_sequence values(4,'qwe4');
+SELECT * FROM USER_SEQUENCE;
+SELECT s_seq,num,userid
+FROM user_sequence;
+
+SELECT min_value, max_value, increment_by, last_number
+from user_sequences
+where sequence_name = 'S_SEQ'
+;
+
+/*문제23. merge예시*/
+select * from professor_temp;
+
+merge into professor p
+using professor_temp f
+on (p.profno = f.profno)
+when matched then
+    update set p.position=f.position
+when not matched then
+    insert values(f.profno, f.name, f.userid, f.position, f.sal, f.hiredate, f.comm, f.deptno)
+;
+rollback;
+/*테이블 생성*/
+CREATE TABLE professor_temp AS
+SELECT *
+FROM professor
+WHERE position='교수'
+;
+commit;
+/*데이터 수정*/
+UPDATE professor_temp
+SET position='명예교수'
+WHERE position='교수'
+;
+/*데이터 삽입*/
+desc PROFESSOR_TEMP;
+INSERT INTO PROFESSOR_TEMP
+VALUES(9999,'김도경','arom21','전임강사',200,sysdate,10,101);
+select * from professor_temp;
+
+/*문제22. delete 예제*/
+/*학번이20101인 학생삭제*/
+--delete 
+--from student
+--where studno=20101;
+/*컴퓨터공학과인 학생들 삭제하라*/
+--DELETE FROM student
+--WHERE deptno = (SELECT deptno
+--                FROM department
+--                WHERE dname='컴퓨터공학과')
+--;
+--rollback;
+
+/*문제21. 교수테이블에서 이재우 교수의 직급과 동일한 직급을 가진 
+교수들 중 현재 급여가 410이 안되는 교수들의 급여를 12%인상하세요*/
+UPDATE professor
+SET sal = sal*1.12
+WHERE position=(SELECT position
+            FROM professor
+            WHERE name='이만식')
+    AND sal < 450
+;
+
+rollback;
+--문제20. 서브쿼리를 이용한 update
+/*서브쿼리를 이용. 학번이10201인 학생의 학년과 학과번호를 10103인 학생의 학년과 학과번호와 동일하게 수정하라*/
+UPDATE student
+SET (grade,deptno) = (SELECT grade, deptno
+                        FROM student
+                        WHERE studno=10103)
+WHERE studno=10201;
+
+--문제19. update
+/*교수번호 9903인 사람의 직급을 '부교수'로 변경하라*/
+UPDATE professor
+SET position='부교수'
+WHERE profno=9903;
+rollback;
+--문제18. pivoting insert
+/*테이블 생성*/
+CREATE TABLE sales(
+    sales_no    number(4)
+    ,week_no    number(2)
+    ,sales_mon  number(7,2)
+    ,sales_tue  number(7,2)
+    ,sales_wed  number(7,2)
+    ,sales_thu  number(7,2)
+    ,sales_fri  number(7,2)
+);
+commit;
+INSERT INTO sales VALUES (1101,4,100,150,80,60,120);
+INSERT INTO sales VALUES (1102,5,300,300,230,120,150);
+/*pivot 테이블 생성*/
+CREATE TABLE sales_data(
+    sales_no    number(4)
+    ,week_no    number(2)
+    ,day_no     number(2)
+    ,sales      number(7,2)
+);
+select * from sales;
+INSERT ALL
+INTO sales_data VALUES(sales_no,week_no,'1',sales_mon)
+INTO sales_data VALUES(sales_no,week_no,'2',sales_tue)
+INTO sales_data VALUES(sales_no,week_no,'3',sales_wed)
+INTO sales_data VALUES(sales_no,week_no,'4',sales_thu)
+INTO sales_data VALUES(sales_no,week_no,'5',sales_fri)
+SELECT sales_no
+    ,week_no
+    ,sales_mon
+    ,sales_tue
+    ,sales_wed
+    ,sales_thu
+    ,sales_fri
+FROM sales;
+commit;
+select * from sales_data order by SALES_NO,day_no;
+
+--문제17.insert all 예제
+INSERT FIRST
+WHEN height>170 THEN
+    INTO height_info VALUES(studno, name, height)
+WHEN weight>70 THEN
+    INTO weight_info VALUES(studno,name,weight)
+SELECT studno, name, height, weight
+FROM student
+WHERE grade>='2'
+;
+commit;
+
+--문제16. 테이블삭제
+delete from WEIGHT_INFO;
+delete from height_info;
+select * from WEIGHT_INFO;
+select * from HEIGHT_INFO;
+commit;
+
+--문제15. insert all 연습
+commit;
+select * from HEIGHT_INFO;
+--INSERT ALL
+--INTO height_info VALUES(studno, name, height)
+--INTO weight_info VALUES(studno, name, weight)
+--SELECT studno, name, height, weight
+--FROM student
+--WHERE grade >= '2'
+--;
+--create table height_info(
+--    studno number(5)
+--    ,name varchar2(10)
+--    ,height number(5,2) -- 소수점 둘째자리까지 나타냄
+--);
+--create table weight_info(
+--    studno number(5)
+--    ,name varchar2(10)
+--    ,weight number(5,2)
+--);
+
+--문제14. INSERT연습
+--테이블생성 -> 거짓조건으로 구조만 복사
+create table t_student
+as select * from student
+where 1=0;
+--테이블로 insert -> 데이터 복사
+select * from T_STUDENT;
+insert into T_STUDENT
+select * from student;
+commit;
+
+--문제13. INSERT연습
+desc student;
+--INSERT INTO student
+--VALUES(10110,'홍길동','hong','1','8501011143098','85/01/01','041)630-3114',170,70,101,9903);
+--commit;
+
+--INSERT INTO department(deptno,dname)
+--VALUES (300,'생명공학부');
+--INSERT INTO department
+--VALUES (300,'환경보건학과','',null);
+--commit;
+
+desc professor;
+select * from professor;
+--insert into professor(profno,name,position,hiredate,deptno)
+--values(9920,'최윤식','조교수',to_date('2016/01/01','YYYY/MM/DD'), 102);
+--insert into professor
+--values(9910,'박미선','white','조교수',200,sysdate,10, 102);
+
+--문제12. 학년별로 몸무게가 최소인 학생의 이름,학년,몸무게 출력 (단, unpairwise방식사용)
+select name
+    ,grade
+    ,weight
+from student
+where grade in (select grade
+                from student
+                group by grade)
+    AND weight in (select min(weight) 
+                    from student
+                    group by grade)
+;
+
+
+--문제11. pairwise
+select name
+    ,grade
+    ,weight
+from student
+where (grade, weight) in (select grade
+                                , min(weight)
+                            from student
+                            group by grade
+                        )
+;
+
+--문제10. 학과별 학생수가 최대인 학과번호와 학생 수를 출력하라.
+SELECT deptno
+    ,count(studno)
+FROM student
+GROUP BY deptno
+HAVING count(studno) = (SELECT max(count(studno))
+                    FROM student
+                    GROUP BY deptno
+                    )
+;
+--SELECT deptno, count(*)       -- GROUP에 조건을 걸거면 HAVING절을 사용해아한다. WHERE절이 아님.
+--FROM student
+--WHERE deptno is not null
+--GROUP BY deptno
+--ORDER BY count(*) desc
+--;
+
+--문제9. NOT EXIST. 학생 중에서 'goodstudent'라는 id를 가진 사람이 없으면 1을 출력하라
+SELECT 1
+FROM dual
+WHERE NOT EXISTS (SELECT studno
+                    FROM student
+                    WHERE LOWER(userid)='goodstudent')
+;
+
+--문제8. EXIST 
+SELECT *
+FROM professor
+WHERE EXISTS (SELECT profno
+            FROM professor
+            WHERE COMM IS NOT NULL
+            )
+;
+
+--문제7. ALL연산자 = MAX()
+SELECT studno
+    ,name
+    ,height
+FROM student
+WHERE height > ALL (SELECT height
+                    FROM student
+                    WHERE grade='4'
+                    )
+;
+
+--문제6. ANY연산자 = MIN()
+SELECT studno
+    ,name
+    ,height
+FROM student
+WHERE height > ANY (SELECT height
+                FROM student
+                WHERE grade='4'
+                )
+;
+
+SELECT studno
+    ,name
+    ,height
+FROM student
+WHERE height > (SELECT MIN(height)
+                FROM student
+                WHERE grade='4'
+                )
+;
+
+--문제5.
+select * from department;
+SELECT name
+    ,grade
+    ,deptno
+FROM student
+WHERE deptno IN (SELECT deptno
+                FROM department
+                WHERE college=100
+                )
+;
+
+--문제4.20101번 학생과 학년이 같고, 키가 20101번학생보다 큰 학생
+SELECT s.name
+    ,s.grade
+    ,s.height
+    ,d.deptno
+    ,d.dname
+FROM student s, department d
+WHERE s.grade=(SELECT grade
+            FROM student
+            where studno=20101
+            )
+    AND s.height>(SELECT height
+                FROM student
+                WHERE studno=20101
+                )
+    AND s.deptno = d.deptno
+;
+
+SELECT s.name,s.grade,s.height,d.deptno,d.dname
+FROM student s JOIN department d
+ON s.grade=(SELECT grade
+            FROM student
+            where studno=20101
+            )
+    AND s.height>(SELECT height
+                FROM student
+                WHERE studno=20101
+                )
+    AND s.deptno = d.deptno
+;
+--연습3.서브쿼리 <연산자
+SELECT name
+    ,deptno
+    ,weight
+FROM student
+WHERE weight < (SELECT AVG(weight)
+                FROM student
+                WHERE deptno=101
+                )
+ORDER BY deptno
+;
+
+--문제2.서브쿼리 =연산자
+SELECT studno
+    ,name
+    ,grade
+FROM student
+WHERE grade = (select grade
+                from student
+                where userid = 'jun123'
+                )
+;
+
+--문제1.서브쿼리
+select name
+    , position
+from professor
+where position = (select position
+                    from professor
+                    where name = '전은지'
+                    )
+;
+
+
+------------------------------scott 코드------------------------------
+
+/*문제6.*/
+CREATE SEQUENCE s_seq
+INCREMENT BY 1
+START WITH 1
+MAXVALUE 100;
+
+INSERT INTO emp(empno, ename) VALUES (S_SEQ.NEXTVAL, 'test3');
+select s_seq.currval from dual;
+/*문제5. 사원테이블에서 boston에 근무하는 사원들을 모드 삭제하세요 emp,dept*/
+DELETE
+FROM emp
+WHERE deptno = (SELECT deptno
+                FROM dept
+                WHERE LOWER(loc) = 'chicago')
+;
+rollback;
+/*문제4. 부서번호와 급여가 보너스를 받는 어떤 사원의 부서 번호와 급여에 
+일치하는 사원의 이름, 부서 번호,급여를 출력*/
+SELECT ename
+    ,deptno
+    ,sal
+FROM emp
+WHERE (deptno, sal) IN (SELECT deptno
+                                ,sal
+                        FROM emp
+                        WHERE comm is not null)
+;
+
+/*문제3. 평균 급여 이상을 받는 모든사원에 대해서, 사원 번호와 이름을 출력.
+단, 급여는 내림차순정렬 */
+SELECT empno
+    ,ename
+FROM emp
+WHERE sal >= (SELECT AVG(sal)
+                FROM emp
+                )
+ORDER BY sal DESC                
+;
+
+--문제2. blake와 같은 부서에 있는 모든 사원에 대해서 사원이름과 입사일을 출력.
+SELECT ename
+    ,hiredate
+FROM emp
+WHERE deptno = (SELECT deptno
+                FROM emp
+                WHERE LOWER(ename)='blake'
+                )
+;
+
+--문제1. 부서별로 받는 최대급여. pairwise
+select deptno
+    ,ename
+    ,sal
+from emp
+where (deptno,sal) in (select deptno
+                            ,max(sal)
+                        from emp
+                        group by deptno
+                        )
+;
