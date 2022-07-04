@@ -1,0 +1,13 @@
+-- 코드를 입력하세요
+SELECT ANIMAL_ID
+    ,name
+    ,(CASE LOWER(SEX_UPON_INTAKE)
+        WHEN 'neutered male' THEN 'O'
+        WHEN 'neutered female' THEN 'O'
+        WHEN 'spayed male' THEN 'O'
+        WHEN 'spayed female' THEN 'O'
+        ELSE 'X'
+     END) AS "중성화"
+FROM animal_ins
+ORDER BY animal_id
+;
