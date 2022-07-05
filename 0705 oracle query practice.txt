@@ -1,0 +1,301 @@
+select * from student;
+select * from sugang;
+select * from professor;
+desc student;
+desc subject;
+desc professor;
+select constraint_name
+    ,constraint_type
+    ,deferred
+from user_constraints
+where table_name IN ('DEPARTMENT','SUBJECT','SUGANG');
+
+
+/*문제1 sesac 테이블 스페이스를 기본 100m로 생성하세요 */
+create tablespace sesac
+datafile 'C:\~~\sesac.dbf' size 100m;
+
+/*문제2 sesac/sesac20** 라는 유저 생성후 디폴트 테이블 스페이스는sesac,
+
+temporary 테이블 스페이스는 temp을 지정하세요. */
+create user sesac identified by sesac20
+default tablespace sesac
+temporary tablespace temp;
+/*문제3 sesac에 주문관리 테이블 인스턴스를 기반으로 s_order 테이블을 만들어 보세요*/
+grant create session to sesac; --create권한부여
+create table s_order(
+    id              number(7) not null
+        CONSTRAINT order_pk primary key
+    ,customer_id    number(7) not null
+    ,date_ord       date
+    ,total          number(11,2)
+    ,payment_type   varchar2(6)
+        constraint order_pay_type_ck check (payment_type in ('현금','카드'))
+);
+COMMENT ON COLUMN s_order.id IS '제품id';
+COMMENT ON COLUMN s_order.customer_id IS '고객id';
+COMMENT ON COLUMN s_order.date_ord IS '주문일자';
+COMMENT ON COLUMN s_order.total IS '총금액';
+COMMENT ON COLUMN s_order.payment_type IS '지불형식(현금,카드)';
+/*문제4 s_order 테이블에 데이터를 입력하세요. */
+insert into s_order values(0001,12345,sysdate,50000,'카드');
+insert into s_order values(0002,635634,sysdate,150000,'카드');
+insert into s_order values(0003,52223,sysdate,9000,'현금');
+insert into s_order values(0004,88888,sysdate,787000,'현금');
+insert into s_order values(100,204,'18/08/07',6110000,'카드');
+insert into s_order values(102,206,'18/09/07',1865600,'현금');
+insert into s_order values(103,206,'18/10/07',1865600,'현금');
+/*문제5 s_order 테이블의 103번 주문의 지불방식을 ‘카드’로 변경해 보세요.*/
+update s_order
+set payment_type='카드'
+where id=103;
+/*문제6 인라인 뷰
+학과별 최대키를 구하고 최대키를 가진 학생의
+학과명, 최대키, 이름, 키를 출력하세요.(결과는 아래~)
+
+학과명 최대키 이름 키
+-------------------------------------
+멀티미디어학과 177 오유석 177
+컴퓨터공학과    186  서재진 186
+전자공학과      184   조명훈 184*/
+select * from department;
+select * from student;
+
+select t.dname "학과명"
+        ,t.max_grade_height "최대키"
+        ,s.name
+        ,s.height
+from (select d.dname dname
+            ,d.deptno deptno
+            ,max(st.height) max_grade_height 
+        from student st, department d
+        where st.deptno = d.deptno
+        group by d.dname
+                ,d.deptno) t, student s
+where s.deptno = t.deptno
+    and t.max_grade_height = s.height
+;
+
+select d.dname "학과명"
+        ,t.max_height "최대키"
+        ,s.name
+        ,s.height
+from (select deptno
+            ,max(height) max_height
+        from student 
+        group by deptno) t, student s, department d
+where s.height = t.max_height
+    and t.deptno = s.deptno
+    and s.deptno = d.deptno
+;
+
+/*실습19 객체 권한 부여 command line에서 작업*/
+--conn system/@@ -- supuer user접속
+create user tiger identified by tiger123 -- user생성
+default tablespace users
+temporary tablespace temp;
+grant connect, resource to tiger;
+conn tiger/tiger123
+select * from tabs; -- 테이블이 있는지확인한다. 아무것도 없음.
+select * from hr.student;
+
+--conn hr/@@  -- db접속
+grant update(height, weight) on student to tiger; --권한부여
+--conn tiger/@@  -- tigeruser 접속
+update hr.student
+set height=180, weight=80
+where deptno=101;
+
+
+
+/*실습19 시스템 권한 부여*/
+--conn system/@@
+--grant query rewrite to scott;
+--grant query rewrite to public;
+--conn scott/@@
+--select * from user_sys_privs;
+
+/*실습18 이미 만들어둔 뷰에 컬럼추가하기*/
+create or replace view v_stud_dept101
+as select studno, name, deptno, grade
+    from student
+    where deptno=101;
+
+/*실습18 각 학년의 평균 키를 구하고 평균 키보다 큰 학생의 
+학년, 이름, 키, 각 학년의 평균 키를 출력하세요*/
+select s.grade
+        ,s.name
+        ,s.height
+        ,g.grad_avg_height
+from (select grade
+            ,avg(height) grad_avg_height
+        from student 
+        group by grade) g, student s
+where g.grade = s.grade
+    and s.height > g.grad_avg_height
+;
+
+select * from student;
+
+/*실습17 인라인뷰*/
+select dname,avg_height, avg_weight
+from (select deptno, avg(height) avg_height, avg(weight) avg_weight
+        from student
+        group by deptno) s, department d
+where s.deptno = d.deptno        
+;
+
+/*실습17 뷰 생성*/
+create or replace view v_prof_avg_sal
+as select deptno, sum(sal) sum_sal
+    from professor
+    group by deptno
+;
+select * from v_prof_avg_sal;
+/*실습16 뷰 생성*/
+create or replace view v_stud_dept101 as
+SELECT s.studno, s.name, s.deptno, d.dname
+from student s, department d
+where s.deptno = d.deptno
+    and s.deptno=101;
+select * from v_stud_dept101;
+
+/*실습15 뷰 생성*/
+CREATE VIEW VIEW_PROFESSOR AS
+SELECT profno, name, userid,position, hiredate, deptno
+FROM professor;
+select * from view_professor;
+
+/*실습14 함수기반 인덱스*/
+drop index idx_stud_birthdate;
+
+/*실습13 함수기반 인덱스*/
+CREATE INDEX fidx_stud_no_name ON student(deptno desc, name asc);
+CREATE INDEX uppercase_idx ON emp(UPPER(ename));
+SELECT * FROM emp WHERE UPPER(ename) = 'KING';
+CREATE INDEX idx_standard_weight 
+ON student((height-100)*0.9);
+
+/*실습12 결합 인덱스*/
+CREATE INDEX idx_stud_dno_grade
+ON student(deptno,grade);
+
+/*실습11 non unique index*/
+CREATE INDEX idx_stud_birthdate
+ON student(birthdate);
+
+/*실습11 unique index*/
+CREATE UNIQUE INDEX idx_dept_name
+ON department(dname);
+select * from department order by dname;
+
+
+/*실습10 제약조건 비활성화*/
+alter table sugang
+disable constraint sugang_pk;
+alter table sugang
+enable constraint sugang_studno_fk;
+select constraint_name
+    ,status
+from user_constraints
+where table_name IN ('SUBJECT','SUGANG');
+
+
+/*실습10 제약조건 삭제*/
+alter table subject
+drop constraint subject_trem_ck;
+
+/*실습9*/
+insert into subject values(1,'Sqk','1','1');
+insert into subject values(4,'데이터베이스','1','필수');
+insert into subject values(4,'데이터모델링','2','선택');
+select * from subject;
+
+/*실습8. 교수테이블 옵션 입력*/
+alter table professor 
+add constraint prof_pk primary key(profno);
+
+alter table professor modify (name not null);
+
+alter table professor add constraint prof_fk 
+foreign key(deptno) references department(deptno);
+
+select constraint_name, constraint_type
+from user_constraints
+where table_name='PROFESSOR';
+
+/*실습7.department 컬럼 옵션 입력 */
+alter table department modify (dname not null);
+desc department;
+
+insert into department(deptno, dname)
+values(301,'생명공학과'); -- 오류. 이미 있는 deptno
+insert into department(deptno, dname)
+values(302,'');          -- 오류, dname 은 not null
+/*실습6. student, department 컬럼 옵션 입력*/
+alter table student
+add constraint stud_idnum_uk UNIQUE(idnum);
+
+alter table student
+modify (name constraint stud_name_nn not null);
+-- department의 deptno을 pk로 먼저 바궈야함
+--alter table department 
+--add constraint dept_no_pk primary key(deptno); 
+alter table student add constraint stud_dept_fk
+foreign key(deptno) references department(deptno);
+
+/*실습5. 걸어놓은 제약조건 확인하는방법*/
+select constraint_name
+    ,constraint_type
+from user_constraints
+where table_name IN ('DEPARTMENT','SUBJECT','SUGANG');
+
+/*실습4 */
+create table sugang(
+    studno      number(5)
+        constraint sugang_studno_fk references student(studno)
+    ,subno      number(5)
+        constraint sugang_subno_fk references subject(subno)
+    ,regdate    DATE
+    ,result     number(3)
+    ,constraint sugang_pk primary key(studno, subno)
+);
+
+drop table sugang;
+/*실습3 컬럼 제약조건 변경*/
+alter table student
+add constraint stud_no_pk primary key(studno);
+
+/*실습2 무결성 제약조건 생성*/
+CREATE TABLE subject(
+    subno       number(5)
+        CONSTRAINT subject_no_pk primary key
+        deferrable initially deferred
+        using index tablespace indx
+    , subname   varchar2(20)
+        constraint subject_name_nn not null
+    ,term       varchar2(1)
+        constraint suBject_term_ck check (term in ('1','2'))
+    ,type       varchar2(1)
+); --oracle의 system.dbf 있는 경로로 들어가서  datafile만들어주자/
+-- create tablespace indx datafile 'C:\~\XE\indx.dbf' size 100m;
+drop table subject;
+
+/*실습1 데이터 사전 조회*/
+SELECT TABLE_NAME FROM USER_TABLES;
+SELECT OWNER, TABLE_NAME FROM ALL_TABLES; 
+SELECT OWNER, TABLE_NAME FROM DBA_TABLES;
+
+--주석달기
+comment on column student.studno is '학번';
+COMMENT ON COLUMN STUDENT.NAME IS '별명';
+--테이블 주석 확인하는 방법
+SELECT COMMENTS FROM USER_TAB_COMMENTS
+WHERE TABLE_NAME='SUBJECT';
+--컬럼 주석 확인하는방법
+SELECT * FROM USER_COL_COMMENTS
+WHERE TABLE_NAME='SUBJECT'; 
+--테이블 주석 삭제
+COMMENT ON TABLE STUDENT IS '';
+--컬럼 주석 삭제
+COMMENT ON COLUMN STUDENT.NAME IS '';
