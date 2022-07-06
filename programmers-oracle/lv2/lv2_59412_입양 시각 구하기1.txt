@@ -1,0 +1,9 @@
+-- 코드를 입력하세요
+-- 24시간으로 표현할때는 'HH24'이다.
+SELECT to_char(datetime,'hh24')
+    ,count(*)
+FROM animal_outs
+WHERE to_char(datetime,'hh24') BETWEEN '09' AND '19'
+GROUP BY to_char(datetime,'hh24')
+ORDER BY to_char(datetime,'hh24')
+;
