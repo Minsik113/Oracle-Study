@@ -1,0 +1,161 @@
+/**/
+select * from student;
+
+/*실습20. import 사용. hr유저에서 읽어온 expdat.dmp안에 dept,emp파일을 system유저에게 준다.*/
+imp system/manager file=expdat.dmp fromuser=hr touser=system tables=(dept,emp)
+-- hr유저의 모든것을 tiger유저에 옮긴다
+imp system/manager file=hr_all.dmp fromuser=hr touser=tiger
+
+/*실습19. export 사용. full  mode*/
+exp system/manager full=y file=dba.dmp grants=y rows=y
+
+/*실습18. export 사용. user mode*/
+exp hr/hr file=hr_all.dmp owner=hr grants=y rows=y compress=y
+C:\Users\user\hr_all.dmp 파일이 생긴다. 빽업파일임
+
+/*실습17. export 사용. table mode*/
+cmd에서 exp system/manager tables=(hr.emp, hr.dept) grants=y indexes=y 를 입력하면
+C:\Users\user\expdat.dmp 파일이 생긴다. 빽업파일임
+
+cmd에서 exp hr/hr file=hr.dmp tables=emp,dept rows=y compress=y 하면
+C:\Users\user\hr.dmp파일 생긴다.
+
+/*실습16. order siblings by, tree의 상관관계를 그대로 유지하면서 내부요소 정렬*/
+select lpad('   ',4*(level-1)) || ename "사원명"
+    ,ename ename2
+    ,empno 사번
+    ,level
+from emp
+start with job = upper('President')
+connect by nocycle prior empno = mgr
+order siblings by ename  --order by ename 계층적 질의문에서 이렇게 쓰면 안됨
+;
+
+/*실습15. CONNECT_BY_ISLEAF, 사원이 어느 부서에 있는지 경로(path) 조회*/
+select level
+    ,sys_connect_by_path(ename,'/') path
+from emp
+where CONNECT_BY_ISLEAF = 1 -- leaf node만 선택
+start with mgr is null
+connect by nocycle prior empno=mgr
+;
+
+/*실습15. 사원이 어느 부서에 있는지 경로(path) 조회*/
+select LPAD('   ',4*(level-1)) || ename "사원명"
+    ,empno "사번"
+    ,sys_connect_by_path(ename,'/') path
+from emp
+start with job = upper('president')
+connect by nocycle prior empno=mgr
+;
+
+/*실습14. 조직마다 말단 사원(Leaf node)이면 1을 출력하라*/
+select * from emp;
+select LPAD('   ',4*(level-1)) || ename "사원명"
+    ,empno "사번"
+    ,connect_by_isleaf "단말노드여부" -- 최하위노드
+    ,level
+from emp
+start with job = upper('president')
+connect by nocycle prior empno=mgr
+;
+
+/*실습13. 조직마다 대표하는 사람(최상위 노드)의 사번을 출력하라*/
+select LPAD('   ',4*(level-1)) || ename "사원명"
+    ,empno "사번"
+    ,connect_by_root empno "최상위사원"
+    ,level
+from emp
+start with job = upper('president')
+connect by prior empno=mgr
+;
+
+/*실습12. 계층구조에서 가지 제거 방법
+정보미디어학부에 포함된 과 없애기*/
+select deptno, college, dname, loc
+from department
+start with college is null
+connect by prior deptno = college
+    and dname != '정보미디어학부';
+
+/*실습11. 계층구조에서 가지 제거 방법
+정보미디어학부만 없애기*/
+select deptno, college, dname, loc
+from department
+where dname ! ='정보미디어학부'
+start with college is null
+connect by prior deptno = college;
+
+/*실습10. 레벨별로 조직도 그리기*/
+select level
+    ,lpad(' ',(level-1)*2) || dname as "조직도"
+from department
+start with dname='공과대학'
+connect by prior deptno = college;
+
+/*실습9. 102번 학과를 학봐,학부,단과대 순으로 bottom-up 형식의 계층 구조로 조회*/
+select deptno, dname, college
+from department
+start with deptno=102
+connect by prior college = deptno;
+
+/*실습8. 계층적질의문사용하여 top-down형식의 계층구조 출력*/
+SELECT deptno, dname, college
+FROM department
+START WITH deptno=10
+CONNECT BY PRIOR deptno = college;
+
+/*실습7. 전용 동의어, 공용 동의어 삭제*/
+conn hr/hr
+drop synonym my_project;
+conn system/manaer
+drop public synonym pub_project;
+
+/*실습6. 공용 동의어 생성*/
+connect system/manager
+create public synonym pub_project for project -- 공용동의어 생성
+conn scott/tiger
+select * from pub_project;
+
+/*실습5. 전용 동의어 생성*/
+conn system/manager
+create table project(
+    project_id      number(5)
+        constraint pro_id_pk primary key
+    ,project_name   varchar2(100)
+    ,studno         number(5)
+    ,profno         number(5)
+);
+insert into project values(12345,'portfolio',10101,9901);
+select * from project;
+
+grant select on project to scott;
+conn scott/tiger
+select * from project;
+select * from system.project;
+
+connect scott/tiger
+create synonym my_project for system.project; -- create synonym권한부여
+select * from my_project;
+
+/*실습4. 롤 부여*/
+GRANT hr_clerk TO tiger;
+GRANT hr_clerk TO hr_mgr;
+conn tiger/tiger123 -- tiger에 접속
+select * from tab; -- 아무 테이블도 없음
+select * from hr.student; -- 학생 테이블이 조회된다.
+
+/*실습3. hr_clerk에 student 객체 권한 부여*/
+GRANT select, insert, delete ON hr.student TO hr_clerk;
+
+/*실습2. hr_mgr에 create session 시스템 권한 부여*/
+grant create session to hr_mgr;
+
+/*실습1. 암호를 지정한 롤, 지정하지 않은 롤 생성*/
+--1 superuser로그인
+conn system/manager 
+--2 암호를 지정하지않은 롤
+create role hr_clerk;
+--3 암호를 지정한 롤
+create role hr_mgr
+identified by manger;
