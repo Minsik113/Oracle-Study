@@ -1,4 +1,57 @@
 /**/
+
+/*문제1*/
+conn system/manager
+CREATE TABLE employee(
+    id          number(7)
+    ,last_name  varchar2(25)
+    ,first_name varchar2(25)
+    ,dept_id    number(7)
+);
+INSERT INTO employee
+VALUES(001,'cho','minsik',100);
+
+/*문제2*/
+CREATE PUBLIC SYNONYM pub_employee FOR employee; --공용동의어생성
+
+/*문제3*/
+SELECT * FROM pub_employee;
+
+/*문제4*/
+conn system/manager
+drop public synonym pub_employee;
+conn hr/hr
+select * from pub_employee; --없는거확인
+
+/*문제5*/
+conn system/manager
+CREATE TABLESPACE test
+DATAFILE 'C:\oraclexe\app\oracle\oradata\XE\test.dbf' SIZE 100m;
+
+/*문제6*/
+--cmd
+exp hr/hr file='C:\Users\user\hr.dmp'tables=(professor,student)
+
+/*문제7*/
+conn system/manager
+CREATE USER test identified by "test333##"
+DEFAULT TABLESPACE test
+TEMPORARY tablespace temp;
+grant create session to test; -- test에게권한줘야 conn가능
+grant resource to test; --이거해야 import가능ㅋ;
+
+/*문제8*/
+--cmd
+imp test/test333## file='C:\Users\user\hr.dmp' fromuser=hr touser=test tables=(professor,student)
+
+# 문제9
+a=80
+b=75
+c=55
+print((a+b+c)/3)
+
+
+-- 실습문제
 select * from student;
 
 /*실습20. import 사용. hr유저에서 읽어온 expdat.dmp안에 dept,emp파일을 system유저에게 준다.*/
