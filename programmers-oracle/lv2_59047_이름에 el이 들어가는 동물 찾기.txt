@@ -1,8 +1,0 @@
--- 코드를 입력하세요
-SELECT animal_id
-    ,name
-FROM animal_ins
-WHERE LOWER(ANIMAL_TYPE) = 'dog'
-    AND LOWER(name) LIKE '%el%'
-ORDER BY name
-;
