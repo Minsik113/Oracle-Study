@@ -1,0 +1,11 @@
+-EASY
+Weather Observation Station 3 -> 모르겠음
+Weather Observation Station 4 -> 이게답맞나? => 됨
+Weather Observation Station 5 -> 모르겠음
+Weather Observation Station 6 -> 다시한번
+
+
+-MEDIUM
+
+
+-HARD
