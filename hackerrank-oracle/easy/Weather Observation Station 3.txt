@@ -1,0 +1,16 @@
+-- 
+SELECT DISTINCT CITY
+FROM STATION
+WHERE MOD(ID,2)=0
+;
+
+-- 처음품
+SELECT A.CITY
+FROM (select DISTINCT CITY
+            , CASE 
+                WHEN MOD(ID,2)=0 THEN '1'
+                ELSE '2'
+             END AS CHK
+      from station) A
+WHERE A.CHK='1'
+;
