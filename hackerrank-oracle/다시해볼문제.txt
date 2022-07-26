@@ -7,12 +7,14 @@ Weather Observation Station 17 -> 모르겠음
 HIGER THAN 75 MARKS -> 모르겠음
 Type of Triangle -> 모르겠음. 한행씩 비교하고 연산까지해야함
 Average Population -> 모르겠음. 기본 함수 외우자.
+Top Earners -> 다시
+The Blunder -> 기본함수 외우자
 
 Weather Observation Station 4 -> 이게답맞나? => 됨
 Weather Observation Station 6 -> 다시한번
 Weather Observation Station 7 -> 정규식으로 다시
 Weather Observation Station 10 -> 정규식으로 다시
-
+Average Population of Each Continent -> 다시
 
 -MEDIUM
 
