@@ -1,0 +1,21 @@
+-- 코드를 입력하세요
+-- SELECT A.MCDP_CD, COUNT(B.MCDP_CD)
+-- FROM (
+--     SELECT *
+--     FROM APPOINTMENT
+--     ) A,
+--     (SELECT * 
+--      FROM APPOINTMENT
+--      WHERE '202205' = TO_CHAR(APNT_YMD,'YYYYMM')
+--     ) B
+-- WHERE A.APNT_YMD = B.APNT_YMD(+)
+-- GROUP BY A.MCDP_CD
+-- ;
+
+SELECT MCDP_CD "진료과코드"
+    ,COUNT(*) "5월예약건수"
+FROM APPOINTMENT
+WHERE '202205' = TO_CHAR(APNT_YMD,'YYYYMM')
+GROUP BY MCDP_CD
+ORDER BY COUNT(*), MCDP_CD
+;
