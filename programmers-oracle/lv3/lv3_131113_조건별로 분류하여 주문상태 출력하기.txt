@@ -1,0 +1,47 @@
+SELECT ORDER_ID
+    ,PRODUCT_ID
+    ,TO_CHAR(OUT_DATE,'YYYY-MM-DD') OUT_DATE
+    ,CASE
+        WHEN OUT_DATE <= TO_DATE('2022-05-01','YYYY-MM-DD') THEN '출고완료'
+        WHEN OUT_DATE > TO_DATE('2022-05-01','YYYY-MM-DD') THEN '출고대기'
+        ELSE '출고미정'
+    END AS "출고여부"
+FROM FOOD_ORDER
+ORDER BY ORDER_ID
+;
+
+
+/*
+너무 긴 것 같은데.. 같은 테이블을 3번이나 조회해야하네? 
+-> 줄이자
+*/
+SELECT ORDER_ID
+    ,PRODUCT_ID
+    ,OUT_DATE
+    ,"출고여부"
+FROM (SELECT ORDER_ID
+        ,PRODUCT_ID
+        ,TO_CHAR(OUT_DATE,'YYYY-MM-DD') AS OUT_DATE
+        ,'출고완료' AS "출고여부"
+    FROM FOOD_ORDER
+    WHERE OUT_DATE IS NOT NULL
+        AND OUT_DATE <= TO_DATE('20220501','YYYY-MM-DD')
+    UNION
+      
+    SELECT ORDER_ID
+        ,PRODUCT_ID
+        ,'' AS OUT_DATE
+        ,'출고미정' AS "출고여부"
+    FROM FOOD_ORDER
+    WHERE OUT_DATE IS NULL
+    UNION
+      
+    SELECT ORDER_ID
+        ,PRODUCT_ID
+        ,TO_CHAR(OUT_DATE,'YYYY-MM-DD') AS OUT_DATE
+        ,'출고대기' AS "출고여부"
+    FROM FOOD_ORDER
+    WHERE OUT_DATE IS NOT NULL
+        AND OUT_DATE > TO_DATE('2022-05-01','YYYY-MM-DD'))
+ORDER BY ORDER_ID ASC
+;
