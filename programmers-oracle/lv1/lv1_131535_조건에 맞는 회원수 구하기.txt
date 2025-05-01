@@ -1,0 +1,10 @@
+--쉬움. to_char 사용할줄알면 금방함.
+--between을 사용할때 주의할점은 날짜 관련된부분일때이다. 
+--day between '2025-03-01' and '2025-03-31' 이면 03월31일 00:00:00까지이기때문에 31일 000000이후는 안나옴
+--to_char(day,'yyyy-mm') = '2025-03' 이런식으로 접근해보자
+
+SELECT count(*)
+FROM user_info
+WHERE to_char(joined,'yyyy') = '2021' 
+    and age between 20 and 29
+;
