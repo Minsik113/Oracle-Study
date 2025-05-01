@@ -1,0 +1,10 @@
+==날짜 관련
+to_char를 이용해서 비교하면 쉽다. 하지만 딜레이가 걸릴 수 있겟지?
+
+SELECT A.title, A.board_id, B.reply_id, B.writer_id, B.contents
+        , to_char(b.created_date,'yyyy-mm-dd') as created_date
+FROM USED_GOODS_BOARD A, USED_GOODS_REPLY B
+WHERE A.board_id = B.board_id
+    AND TO_CHAR(A.created_date,'yyyy-mm') = '2022-10'
+ORDER BY B.created_date, A.title
+;
