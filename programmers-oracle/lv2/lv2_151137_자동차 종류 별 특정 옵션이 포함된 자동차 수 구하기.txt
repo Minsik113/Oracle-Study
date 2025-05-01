@@ -1,0 +1,14 @@
+-- options in ('통풍시트','가죽시트','열선시트')를 사용했었는데 이건 틀림
+-- 컬럼의 value로 단 하나만 들어가는거라면 위처럼 사용해도되지만, 문제에서는
+-- 컬럼의 value가 문자열로 되어있어서 in 이 아닌 like 를 통해 접근해야함.
+
+
+SELECT car_type, count(*) as CARS
+FROM CAR_RENTAL_COMPANY_CAR
+WHERE regexp_like(options,'통풍시트|가죽시트|열선시트')
+-- WHERE options like '%통풍시트%'
+--     or options like '%가죽시트%'
+--     or options like '%열선시트%'
+GROUP BY car_type
+ORDER BY car_type
+;

@@ -1,10 +1,26 @@
-==날짜 관련
-to_char를 이용해서 비교하면 쉽다. 하지만 딜레이가 걸릴 수 있겟지?
+1.날짜 관련
+    to_char를 이용해서 비교하면 쉽다. 하지만 딜레이가 걸릴 수 있겟지?
 
-SELECT A.title, A.board_id, B.reply_id, B.writer_id, B.contents
-        , to_char(b.created_date,'yyyy-mm-dd') as created_date
-FROM USED_GOODS_BOARD A, USED_GOODS_REPLY B
-WHERE A.board_id = B.board_id
-    AND TO_CHAR(A.created_date,'yyyy-mm') = '2022-10'
-ORDER BY B.created_date, A.title
-;
+    SELECT A.title, A.board_id, B.reply_id, B.writer_id, B.contents
+            , to_char(b.created_date,'yyyy-mm-dd') as created_date
+    FROM USED_GOODS_BOARD A, USED_GOODS_REPLY B
+    WHERE A.board_id = B.board_id
+        AND TO_CHAR(A.created_date,'yyyy-mm') = '2022-10'
+    ORDER BY B.created_date, A.title
+    ;
+
+2.(lv2_151137)like와 or를 여러개 써야한다면? regexp_like사용
+    regexp(컬럼, )
+    컬럼의 value로 단 하나만 들어가는거라면 oprtions in ('~~','~~')로 사용해도되지만,
+    컬럼의 value가 문자열로 되어있어서 in 이 아닌 like 를 통해 접근해야한다.
+
+    SELECT car_type, count(*) as CARS
+    FROM CAR_RENTAL_COMPANY_CAR
+    WHERE regexp_like(options,'통풍시트|가죽시트|열선시트')
+    -- WHERE options like '%통풍시트%'
+    --     or options like '%가죽시트%'
+    --     or options like '%열선시트%'
+    GROUP BY car_type
+    ORDER BY car_type
+    ;
+
