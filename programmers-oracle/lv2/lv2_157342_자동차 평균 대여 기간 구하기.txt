@@ -1,0 +1,12 @@
+--to_char(~, fm9999.0) 을 통해 1을 1.0으로 표현하게 한다.
+--    fm은 좌우 공백 제거
+--    9는 해당 숫자를 표시하고 없는 경우에는 공백으로 표시 
+--    0은 해당 숫자를 표시하고 없는 경우에 '0'으로 표시
+
+SELECT car_id
+    , TO_CHAR(ROUND(AVG(end_date-start_date+1),1),'FM9999.0') as AVERAGE_DURATION
+FROM CAR_RENTAL_COMPANY_RENTAL_HISTORY
+GROUP BY car_id
+HAVING ROUND(AVG(end_date-start_date+1),1) >= 7
+ORDER BY TO_NUMBER(AVERAGE_DURATION) desc, car_id desc
+;
