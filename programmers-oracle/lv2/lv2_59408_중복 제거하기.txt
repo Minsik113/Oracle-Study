@@ -4,3 +4,9 @@ FROM animal_ins
 WHERE name IS NOT NULL
 GROUP BY name
 ;
+
+--2025/05/02 22:20
+SELECT count(distinct name) as count
+FROM ANIMAL_INS 
+WHERE NAME IS NOT NULL
+;
